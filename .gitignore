@@ -1,0 +1,31 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+.env
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime data
+uploads/
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.idea/
+.vscode/

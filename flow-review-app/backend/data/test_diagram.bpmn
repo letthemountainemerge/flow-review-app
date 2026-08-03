@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_1"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Applicant" name="申请人">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Submit</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_DeptManager" name="部门负责人">
+        <bpmn:flowNodeRef>Task_DeptApprove</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Finance" name="财务审批人">
+        <bpmn:flowNodeRef>Task_FinanceApprove</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Budget</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Purchase" name="采购执行人">
+        <bpmn:flowNodeRef>Task_Purchase</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_1</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_1" name="采购需求发起">
+      <bpmn:outgoing>Flow_StartToSubmit</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_Submit" name="提交采购申请">
+      <bpmn:incoming>Flow_StartToSubmit</bpmn:incoming>
+      <bpmn:outgoing>Flow_SubmitToDept</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_DeptApprove" name="部门审批">
+      <bpmn:incoming>Flow_SubmitToDept</bpmn:incoming>
+      <bpmn:outgoing>Flow_DeptToFinance</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:exclusiveGateway id="Gateway_Budget" name="预算是否充足">
+      <bpmn:incoming>Flow_DeptToFinance</bpmn:incoming>
+      <bpmn:outgoing>Flow_BudgetOK</bpmn:outgoing>
+      <bpmn:outgoing>Flow_BudgetFail</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Task_FinanceApprove" name="财务审批 KCP">
+      <bpmn:incoming>Flow_BudgetOK</bpmn:incoming>
+      <bpmn:outgoing>Flow_FinanceToPurchase</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Purchase" name="执行采购">
+      <bpmn:incoming>Flow_FinanceToPurchase</bpmn:incoming>
+      <bpmn:outgoing>Flow_PurchaseToEnd</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EndEvent_1" name="采购完成">
+      <bpmn:incoming>Flow_PurchaseToEnd</bpmn:incoming>
+      <bpmn:incoming>Flow_BudgetFail</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_StartToSubmit" sourceRef="StartEvent_1" targetRef="Task_Submit" />
+    <bpmn:sequenceFlow id="Flow_SubmitToDept" sourceRef="Task_Submit" targetRef="Task_DeptApprove" />
+    <bpmn:sequenceFlow id="Flow_DeptToFinance" sourceRef="Task_DeptApprove" targetRef="Gateway_Budget" />
+    <bpmn:sequenceFlow id="Flow_BudgetOK" sourceRef="Gateway_Budget" targetRef="Task_FinanceApprove" name="预算充足" />
+    <bpmn:sequenceFlow id="Flow_BudgetFail" sourceRef="Gateway_Budget" targetRef="EndEvent_1" name="预算不足" />
+    <bpmn:sequenceFlow id="Flow_FinanceToPurchase" sourceRef="Task_FinanceApprove" targetRef="Task_Purchase" />
+    <bpmn:sequenceFlow id="Flow_PurchaseToEnd" sourceRef="Task_Purchase" targetRef="EndEvent_1" />
+  </bpmn:process>
+</bpmn:definitions>
