@@ -22,6 +22,7 @@ Thumbs.db
 
 # Runtime data
 uploads/
+runtime_settings.json
 *.db
 *.db-shm
 *.db-wal
