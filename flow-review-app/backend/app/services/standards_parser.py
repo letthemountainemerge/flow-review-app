@@ -97,6 +97,14 @@ def _parse_markdown(text: str) -> dict:
     flush_section()
     if current_category is not None:
         categories.append(current_category)
+
+    # 如果没有解析到任何分类（文档没有 ## / ### 标题），
+    # 把整个文档当作一个「未分类规则」兜底解析
+    if not any(c.get("sections") for c in categories):
+        fallback = _parse_fallback(text)
+        if fallback:
+            categories = [fallback]
+
     return {"categories": [c for c in categories if c.get("sections")]}
 
 
@@ -119,6 +127,31 @@ def _extract_rules(lines: list[str]) -> list[dict]:
             continue
         rules.append({"content": cleaned})
     return rules
+
+
+def _parse_fallback(text: str) -> Optional[dict]:
+    """兜底解析：文档没有 ## / ### 标题时，把所有编号列表/段落当作规则"""
+    title = "未分类规则"
+    lines: list[str] = []
+
+    for raw in text.splitlines():
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        # 用 H1 作为分类标题
+        if stripped.startswith("# ") and not stripped.startswith("## "):
+            title = stripped[2:].strip()
+            continue
+        lines.append(stripped)
+
+    rules = _extract_rules(lines)
+    if not rules:
+        return None
+
+    return {
+        "title": title,
+        "sections": [{"title": "规则条目", "rules": rules}],
+    }
 
 
 # ---------- 合并 & 去重 ----------
